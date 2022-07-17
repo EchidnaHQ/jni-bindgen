@@ -25,7 +25,6 @@ mod entry {
     use std::process::exit;
 
     pub fn main() {
-        std::panic::set_hook(Box::new(|panic|{ bugsalot::bug!("{:?}", panic); }));
 
         let yaml = load_yaml!("../cli.yml");
         let matches = clap::App::from_yaml(yaml).get_matches();
