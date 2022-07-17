@@ -39,12 +39,16 @@ pub(crate) struct Struct {
     pub java:   jreflection::Class,
 }
 
-fn rust_id<'a>(id: &str) -> Result<&str, Box<dyn Error>> {
+fn rust_id<'a>(id: &str) -> Result<String, Box<dyn Error>> {
     Ok(match RustIdentifier::from_str(id) {
-        RustIdentifier::Identifier(id) => id,
-        RustIdentifier::KeywordRawSafe(id) => id,
-        RustIdentifier::KeywordUnderscorePostfix(id) => id,
-        RustIdentifier::NonIdentifier(id) => io_data_err!("Unable to add_struct(): java identifier {:?} has no rust equivalent (yet?)", id)?,
+        RustIdentifier::Identifier(id) => id.to_string(),
+        RustIdentifier::KeywordRawSafe(id) => id.to_string(),
+        RustIdentifier::NumberIdentifier(id) => ["_", id].join(""),
+        RustIdentifier::KeywordUnderscorePostfix(id) => id.to_string(),
+        RustIdentifier::NonIdentifier(id) => io_data_err!(
+            "Unable to add_struct(): java identifier {:?} has no rust equivalent (yet?)",
+            id
+        )?,
     })
 }
 
@@ -53,7 +57,11 @@ fn feature_id<'a>(id: &str) -> Result<&str, Box<dyn Error>> {
         RustIdentifier::Identifier(id) => id,
         RustIdentifier::KeywordRawSafe(_) => id,
         RustIdentifier::KeywordUnderscorePostfix(_) => id,
-        RustIdentifier::NonIdentifier(id) => io_data_err!("Unable to add_struct(): java identifier {:?} has no rust equivalent (yet?)", id)?,
+        RustIdentifier::NonIdentifier(id) => io_data_err!(
+            "Unable to add_struct(): java identifier {:?} has no rust equivalent (yet?)",
+            id
+        )?,
+        RustIdentifier::NumberIdentifier(_) => id,
     })
 }
 
@@ -109,8 +117,16 @@ impl Struct {
         Ok(buf)
     }
 
-    pub(crate) fn sharded_path_for(context: &Context, class: class::Id) -> Result<PathBuf, Box<dyn Error>> {
-        let rename_to = context.config.rename_classes.get(class.as_str()).map(|name| name.as_str()).ok_or(());
+    pub(crate) fn sharded_path_for(
+        context: &Context,
+        class: class::Id,
+    ) -> Result<PathBuf, Box<dyn Error>> {
+        let rename_to = context
+            .config
+            .rename_classes
+            .get(class.as_str())
+            .map(|id| id.to_owned())
+            .ok_or(());
 
         let mut buf = String::new();
 
@@ -120,9 +136,17 @@ impl Struct {
 
         for component in class.iter() {
             match component {
-                class::IdPart::Namespace(id)        => write!(&mut buf, "{}/",    rust_id(id)?)?,
-                class::IdPart::ContainingClass(id)  => write!(&mut buf, "{}_",    rust_id(id)?)?,
-                class::IdPart::LeafClass(id)        => write!(&mut buf, "{}.rs",  rename_to.or_else(|_| rust_id(id))?)?,
+                class::IdPart::Namespace(id) => write!(&mut buf, "{}/", rust_id(id)?)?,
+                class::IdPart::ContainingClass(id) => write!(&mut buf, "{}_", rust_id(id)?)?,
+                class::IdPart::LeafClass(id) => {
+                    let id = (&match rename_to.as_ref() {
+                        Ok(rename_to) => rename_to.to_owned(),
+                        Err(_) => rust_id(id).unwrap(),
+                    })
+                        .to_case(Case::Snake);
+
+                    write!(&mut buf, "{}.rs", id)?;
+                }
             }
         }
 

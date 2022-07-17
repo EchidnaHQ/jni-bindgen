@@ -5,7 +5,7 @@ use crate::identifiers::*;
 pub enum RustIdentifier<'a> {
     /// Meets the criteria for a Rust [NON_KEYWORD_IDENTIFIER](https://doc.rust-lang.org/reference/identifiers.html)
     Identifier(&'a str),
-
+    NumberIdentifier(&'a str),
     /// Not a rust-safe [identifier](https://doc.rust-lang.org/reference/identifiers.html).  Unicode, strange ASCII
     /// values, relatively normal ASCII values... you name it.
     NonIdentifier(&'a str),
@@ -92,10 +92,20 @@ impl<'a> RustIdentifier<'a> {
             ""                          => RustIdentifier::NonIdentifier(s),
             "_"                         => RustIdentifier::NonIdentifier(s),
             s if is_rust_identifier(s)  => RustIdentifier::Identifier(s),
-            s                           => RustIdentifier::NonIdentifier(s)
+            s                           => {
+                if String::from(s.chars().nth(0).unwrap()).parse::<usize>().is_ok() {
+                     
+                    RustIdentifier::NumberIdentifier(s)
+                } else {
+                    RustIdentifier::NonIdentifier(s)
+                }
+                
+            }
         }
     }
 }
+
+
 
 #[test] fn rust_identifier_from_str() {
     assert_eq!(RustIdentifier::from_str("foo")  , RustIdentifier::Identifier              ("foo")    );
@@ -183,6 +193,7 @@ pub fn javaify_identifier(name: &str) -> Result<String, IdentifierManglingError>
             RustIdentifier::NonIdentifier(_)            => Err(IdentifierManglingError::NotRustSafe),
             RustIdentifier::KeywordRawSafe(s)           => Ok(s.to_owned()),
             RustIdentifier::KeywordUnderscorePostfix(s) => Ok(s.to_owned()),
+            RustIdentifier::NumberIdentifier(_) => todo!(),
         }
     }
 }
@@ -232,6 +243,7 @@ pub fn rustify_identifier(name: &str) -> Result<String, IdentifierManglingError>
             RustIdentifier::NonIdentifier(_)            => Err(IdentifierManglingError::NotRustSafe),
             RustIdentifier::KeywordRawSafe(s)           => Ok(s.to_owned()),
             RustIdentifier::KeywordUnderscorePostfix(s) => Ok(s.to_owned()),
+            RustIdentifier::NumberIdentifier(_) => todo!(),
         }
     }
 }
@@ -284,6 +296,7 @@ pub fn constify_identifier(name: &str) -> Result<String, IdentifierManglingError
             RustIdentifier::NonIdentifier(_)            => Err(IdentifierManglingError::NotRustSafe),
             RustIdentifier::KeywordRawSafe(s)           => Ok(s.to_owned()),
             RustIdentifier::KeywordUnderscorePostfix(s) => Ok(s.to_owned()),
+            RustIdentifier::NumberIdentifier(_) => todo!(),
         }
     }
 }
