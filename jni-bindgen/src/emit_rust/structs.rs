@@ -229,10 +229,11 @@ impl Struct {
         };
 
         let attributes = (if self.java.deprecated {
-                "#[deprecated] "
-            } else {
-                ""
-            }).to_string();
+            "#[deprecated] "
+        } else {
+            ""
+        })
+        .to_string();
 
         let super_path = if let Some(super_path) = self.java.super_path.as_ref() {
             context.java_to_rust_path(super_path.as_id()).unwrap()
@@ -308,7 +309,7 @@ impl Struct {
             .iter()
             .map(|f| Field::new(context, &self.java, f))
             .collect();
-       
+
         for method in &methods {
             if !method.java.is_public() {
                 continue;

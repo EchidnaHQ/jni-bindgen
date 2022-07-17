@@ -6,7 +6,7 @@ field_url_pattern           = "https://developer.android.com/reference/{CLASS}.h
 argument_seperator          = ",%20"
 
 [input]
-files = ["%LOCALAPPDATA%/Android/Sdk/platforms/android-28/android.jar"] # NOTE: Overridden by build.rs
+files = ["/home/fortressia/Android/Sdk/platforms/android-30/android.jar"] # NOTE: Overridden by build.rs
 
 [output]
 path = "src/generated/api-level-28.rs" # NOTE:  Overridden by build.rs
@@ -19,7 +19,7 @@ keep_rejected_emits             = false                     # reduces deduplicat
 
 [codegen.field_naming_style]
 const_finals    = true
-rustify_names   = false
+rustify_names   = true
 getter_pattern  = "{NAME}"
 setter_pattern  = "set_{NAME}"
 
@@ -59,24 +59,24 @@ signature = "(I)V"
 ## Only necessary when rustified
 ## https://developer.android.com/reference/java/util/Collections
 ## emptyList/emptyMap/emptySet already exists, do the same thing, and are potentially better typed.
-#[[ignore]]
-#class = "java/util/Collections"
-#field = "EMPTY_LIST"
-#[[ignore]]
-#class = "java/util/Collections"
-#field = "EMPTY_MAP"
-#[[ignore]]
-#class = "java/util/Collections"
-#field = "EMPTY_SET"
+[[ignore]]
+class = "java/util/Collections"
+field = "EMPTY_LIST"
+[[ignore]]
+class = "java/util/Collections"
+field = "EMPTY_MAP"
+[[ignore]]
+class = "java/util/Collections"
+field = "EMPTY_SET"
 
 
 
 # https://developer.android.com/reference/java/lang/Long
-#[[rename]]
-#class      = "java/lang/Long"
-#method     = "getLong"
-#signature  = "(Ljava/lang/String;Ljava/lang/Long;)Ljava/lang/Long;"
-#to         = "get_long_string_long_object" # rustified
+[[rename]]
+class      = "java/lang/Long"
+method     = "getLong"
+signature  = "(Ljava/lang/String;Ljava/lang/Long;)Ljava/lang/Long;"
+to         = "get_long_string_long_object" # rustified
 
 
 
