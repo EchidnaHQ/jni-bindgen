@@ -219,7 +219,7 @@ impl Struct {
                 Err(_) => {},
             }
         }
-
+        let has_from_ptr = RefCell::new(false);
         for method in &mut methods {
             if let Some(name) = method.rust_name() {
                 let repeats = *id_repeats.get(name).unwrap_or(&0);
@@ -229,7 +229,7 @@ impl Struct {
                 }
             }
 
-            method.emit(context, indent, out)?;
+            method.emit(context, indent, out, &has_from_ptr)?;
         }
 
         for field in &mut fields {

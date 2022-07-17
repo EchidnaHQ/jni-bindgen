@@ -3,6 +3,7 @@ use crate::identifiers::*;
 
 use jreflection::method;
 
+use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::io;
 
@@ -21,7 +22,7 @@ impl<'a> Method<'a> {
             class,
             java,
             rust_name:      None,
-            mangling_style: MethodManglingStyle::Java, // Immediately overwritten bellow
+            mangling_style: MethodManglingStyle::Rustify, // Immediately overwritten bellow
         };
         result.set_mangling_style(context.config.codegen.method_naming_style); // rust_name + mangling_style
         result
@@ -40,7 +41,7 @@ impl<'a> Method<'a> {
         };
     }
 
-    pub fn emit(&self, context: &Context, indent: &str, out: &mut impl io::Write) -> io::Result<()> {
+    pub fn emit(&self, context: &Context, indent: &str, out: &mut impl io::Write, has_from_ptr: &RefCell<bool>) -> io::Result<()> {
         let mut emit_reject_reasons = Vec::new();
         let mut required_features = BTreeSet::new();
 
@@ -363,10 +364,22 @@ impl<'a> Method<'a> {
             writeln!(out, "{}        __jni_env.call_{}_method_a(self.0.object, __jni_method, __jni_args.as_ptr())", indent, ret_method_fragment)?;
         }
         writeln!(out, "{}    }}", indent)?;
+
+
         writeln!(out, "{}}}", indent)?;
+        
+        if self.java.is_constructor() && !*has_from_ptr.borrow() {
+             writeln!(out, 
+            "\n{}{}{}unsafe fn from_ptr<'env>(__jni_env: &'env __jni_bindgen::Env, ptr: jni_sys::jobject) -> __jni_bindgen::std::result::Result<{}, __jni_bindgen::Local<'env, {}>> {{  
+                Ok(__jni_bindgen::Local::from_env_object(__jni_env.as_jni_env(), ptr))
+            }}",  indent, attributes, access, ret_decl, context.config.codegen.throwable_type.as_str())?;
+            
+            has_from_ptr.replace(true);
+    }
         Ok(())
     }
 }
+
 
 fn emit_cstr(s: &str) -> String {
     let mut s = format!("{:?}", s); // XXX
