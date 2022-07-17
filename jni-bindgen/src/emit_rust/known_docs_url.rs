@@ -33,15 +33,15 @@ impl KnownDocsUrl {
         let no_namespace = if let Some(last_slash) = last_slash {
             &java_class[(last_slash+1)..]
         } else {
-            &java_class[..]
+            java_class
         };
 
         let java_class = java_class
-            .replace("/", pattern.class_namespace_separator.as_str())
-            .replace("$", pattern.class_inner_class_seperator.as_str());
+            .replace('/', pattern.class_namespace_separator.as_str())
+            .replace('$', pattern.class_inner_class_seperator.as_str());
 
         Some(KnownDocsUrl{
-            label:  no_namespace.to_owned().replace("$","."),
+            label:  no_namespace.to_owned().replace('$',"."),
             url:    pattern.class_url_pattern
                 .replace("{CLASS}",         java_class.as_str())
                 .replace("{CLASS.LOWER}",   java_class.to_ascii_lowercase().as_str()),
@@ -71,13 +71,13 @@ impl KnownDocsUrl {
         }
 
         let java_class = method.class.path.as_str()
-            .replace("/", pattern.class_namespace_separator.as_str())
-            .replace("$", pattern.class_inner_class_seperator.as_str());
+            .replace('/', pattern.class_namespace_separator.as_str())
+            .replace('$', pattern.class_inner_class_seperator.as_str());
 
-        let java_outer_class = method.class.path.as_str().rsplitn(2, '/').next().unwrap()
-            .replace("$", pattern.class_inner_class_seperator.as_str());
+        let java_outer_class = method.class.path.as_str().rsplit('/').next().unwrap()
+            .replace('$', pattern.class_inner_class_seperator.as_str());
 
-        let java_inner_class = method.class.path.as_str().rsplitn(2, '/').next().unwrap().rsplitn(2, '$').next().unwrap();
+        let java_inner_class = method.class.path.as_str().rsplit('/').next().unwrap().rsplit('$').next().unwrap();
 
         let label = if is_constructor {
             java_inner_class
@@ -119,8 +119,8 @@ impl KnownDocsUrl {
                 Type::Single(BasicType::Double)  => { java_args.push_str("double");  },
                 Type::Single(BasicType::Class(class)) => {
                     let class = class.as_str()
-                        .replace("/", pattern.argument_namespace_separator  .as_str())
-                        .replace("$", pattern.argument_inner_class_seperator.as_str());
+                        .replace('/', pattern.argument_namespace_separator  .as_str())
+                        .replace('$', pattern.argument_inner_class_seperator.as_str());
                     java_args.push_str(&class);
                 }
                 Type::Array { levels, inner } => {
@@ -136,8 +136,8 @@ impl KnownDocsUrl {
                         BasicType::Double   => java_args.push_str("double"),
                         BasicType::Class(class) => {
                             let class = class.as_str()
-                                .replace("/", pattern.argument_namespace_separator  .as_str())
-                                .replace("$", pattern.argument_inner_class_seperator.as_str());
+                                .replace('/', pattern.argument_namespace_separator  .as_str())
+                                .replace('$', pattern.argument_inner_class_seperator.as_str());
                             java_args.push_str(&class);
                         },
                     }
@@ -197,8 +197,8 @@ impl KnownDocsUrl {
         }
 
         let java_class = java_class
-            .replace("/", pattern.class_namespace_separator.as_str())
-            .replace("$", pattern.class_inner_class_seperator.as_str());
+            .replace('/', pattern.class_namespace_separator.as_str())
+            .replace('$', pattern.class_inner_class_seperator.as_str());
 
         // No {RETURN} support... yet?
 

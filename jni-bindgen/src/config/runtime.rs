@@ -140,8 +140,8 @@ fn resolve_file(path: PathBuf, dir: &PathBuf) -> PathBuf {
         Err(os_string) => os_string,
     }.into();
 
-    let path = if path.is_relative() { dir.clone().join(path) } else { path };
-    path
+    
+    if path.is_relative() { dir.clone().join(path) } else { path }
 }
 
 fn expand_vars(string: String) -> String {

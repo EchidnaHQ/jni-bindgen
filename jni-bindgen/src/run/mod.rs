@@ -39,7 +39,7 @@ pub fn run(config: impl Into<Config>) -> Result<RunResult, Box<dyn Error>> {
         context.write(&mut out)?;
         util::write_generated(&context, &config.output_path, &out[..])?;
     }
-
+    
     Ok(RunResult{
         features: context.features.clone(),
     })

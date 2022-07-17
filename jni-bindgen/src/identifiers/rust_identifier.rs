@@ -93,7 +93,7 @@ impl<'a> RustIdentifier<'a> {
             "_"                         => RustIdentifier::NonIdentifier(s),
             s if is_rust_identifier(s)  => RustIdentifier::Identifier(s),
             s                           => {
-                if String::from(s.chars().nth(0).unwrap()).parse::<usize>().is_ok() {
+                if String::from(s.chars().next().unwrap()).parse::<usize>().is_ok() {
                      
                     RustIdentifier::NumberIdentifier(s)
                 } else {
@@ -133,7 +133,7 @@ fn is_rust_identifier(s: &str) -> bool {
     }
 
     // Subsequent chars
-    while let Some(ch) = chars.next() {
+    for ch in chars {
         match ch {
             'a'..='z' => {},
             'A'..='Z' => {},
@@ -163,7 +163,7 @@ impl std::fmt::Display for IdentifierManglingError { fn fmt(&self, fmt: &mut std
 
 pub fn javaify_identifier(name: &str) -> Result<String, IdentifierManglingError> {
     if name == "_" {
-        return Ok(String::from("__"));
+        Ok(String::from("__"))
     } else {
         let mut chars = name.chars();
 
@@ -178,7 +178,7 @@ pub fn javaify_identifier(name: &str) -> Result<String, IdentifierManglingError>
         }
 
         // Subsequent characters
-        while let Some(ch) = chars.next() {
+        for ch in chars {
             match ch {
                 'a'..='z'   => {},
                 'A'..='Z'   => {},
@@ -200,7 +200,7 @@ pub fn javaify_identifier(name: &str) -> Result<String, IdentifierManglingError>
 
 pub fn rustify_identifier(name: &str) -> Result<String, IdentifierManglingError> {
     if name == "_" {
-        return Ok(String::from("__"));
+        Ok(String::from("__"))
     } else {
         let mut chars = name.chars();
         let mut buffer = String::new();
@@ -217,7 +217,7 @@ pub fn rustify_identifier(name: &str) -> Result<String, IdentifierManglingError>
         }
 
         // Subsequent characters
-        while let Some(ch) = chars.next() {
+        for ch in chars {
             if ch.is_ascii_uppercase() {
                 if uppercase == 0 && !buffer.ends_with('_') {
                     buffer.push('_');
@@ -250,7 +250,7 @@ pub fn rustify_identifier(name: &str) -> Result<String, IdentifierManglingError>
 
 pub fn constify_identifier(name: &str) -> Result<String, IdentifierManglingError> {
     if name == "_" {
-        return Ok(String::from("__"));
+        Ok(String::from("__"))
     } else {
         let mut chars = name.chars();
         let mut buffer = String::new();
@@ -268,7 +268,7 @@ pub fn constify_identifier(name: &str) -> Result<String, IdentifierManglingError
         }
 
         // Subsequent characters
-        while let Some(ch) = chars.next() {
+        for ch in chars {
             let is_upper   = ch.is_ascii_uppercase();
             let is_lower   = ch.is_ascii_lowercase();
             let is_numeric = ch.is_numeric();

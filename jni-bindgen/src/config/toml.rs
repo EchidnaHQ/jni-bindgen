@@ -449,7 +449,7 @@ impl File {
     assert_eq!(file.codegen.method_naming_style,            MethodManglingStyle::Java);
     assert_eq!(file.codegen.method_naming_style_collision,  MethodManglingStyle::RustifyLongSignature);
 
-    assert_eq!(file.logging.verbose, true);
+    assert!(file.logging.verbose, true);
 
     assert_eq!(file.documentation.patterns.len(), 2);
 
@@ -518,7 +518,7 @@ impl File {
     assert_eq!(file.codegen.method_naming_style,            MethodManglingStyle::Rustify);
     assert_eq!(file.codegen.method_naming_style_collision,  MethodManglingStyle::RustifyShortSignature);
 
-    assert_eq!(file.logging.verbose, false);
+    assert!(file.logging.verbose, false);
     assert_eq!(file.documentation.patterns.len(), 0);
     assert_eq!(file.input.files, &[Path::new("%LOCALAPPDATA%/Android/Sdk/platforms/android-28/android.jar")]);
     assert_eq!(file.output.path, Path::new("android28.rs"));
