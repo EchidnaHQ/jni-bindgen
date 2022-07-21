@@ -1,36 +1,41 @@
-use super::{jchar, *};
+use jni::objects::JString;
+
+use super::{ *};
 use std::{char, iter, mem::transmute, slice};
 
 /// Represents an env.GetStringChars + env.GetStringLength query.
 /// Will automatically env.ReleaseStringChars when dropped.
 pub struct StringChars<'env> {
-    env: &'env Env,
-    string: jstring,
-    chars: *const jchar,
+    env: &'env jni::JNIEnv<'env>,
+    string: JString<'env>,
+    chars: *const i8,
     length: jsize, // in characters
 }
 
 impl<'env> StringChars<'env> {
-    /// Construct a StringChars from an Env + jstring.
-    pub unsafe fn from_env_jstring(env: &'env Env, string: jstring) -> Self {
+    /// Construct a StringChars from a jni::JNIEnv + jstring.
+    pub unsafe fn from_env_jstring(
+        env: &'env jni::JNIEnv,
+        string: JString<'env>,
+    ) -> jni::errors::Result<Self> {
         debug_assert!(!string.is_null());
 
-        let chars = env.get_string_chars(string);
-        let length = env.get_string_length(string);
+        let chars = env.get_string_utf_chars(string)?;
+        let length = env.get_array_length(chars as jarray)?;
 
-        Self {
+        Ok(Self {
             env,
             string,
             chars,
             length,
-        }
+        })
     }
 
     /// Get an array of [jchar]s.  Generally UTF16, but not guaranteed to be valid UTF16.
     ///
     /// [jchar]:                    struct.jchar.html
     pub fn chars(&self) -> &[jchar] {
-        unsafe { slice::from_raw_parts(self.chars, self.length as usize) }
+        unsafe { slice::from_raw_parts(self.chars as *const u16, self.length as usize) }
     }
 
     /// Get an array of [u16]s.  Generally UTF16, but not guaranteed to be valid UTF16.
@@ -69,6 +74,6 @@ impl<'env> StringChars<'env> {
 
 impl<'env> Drop for StringChars<'env> {
     fn drop(&mut self) {
-        unsafe { self.env.release_string_chars(self.string, self.chars) };
+        self.env.release_string_utf_chars(self.string, self.chars).unwrap();
     }
 }

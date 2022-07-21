@@ -15,6 +15,7 @@ include = ["/**/*.rs", "/Cargo.toml", "/LICENSE-MIT", "/LICENSE-APACHE"]
 [dependencies]
 jni-sys = "0.3.0"
 lazy_static = "1"
+jni = "0.19.0"
 
 [features]
 default = []
